@@ -13,7 +13,7 @@ let domTags = {
 
 let isYoutubeRules = (tab) => {
   let url = tab.url
-  return url.includes("www.youtube.com/feed/subscriptions") || url == "https://www.youtube.com"
+  return url.includes("www.youtube.com/feed/subscriptions") || url == "https://www.youtube.com" //specifically looking for pages on youtube so we don't match search page
 }
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
