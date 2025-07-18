@@ -11,9 +11,9 @@ let domTags = {
   homePageShorts: "ytd-rich-section-renderer",
 }
 
-let isYoutubeRules = (tab) => {
-  let url = tab.url
-  return url.includes("www.youtube.com/feed/subscriptions") || url == "https://www.youtube.com" //specifically looking for pages on youtube so we don't match search page
+function isYoutubeRules(tab) {
+  const url = tab?.url || ""
+  return ["https://www.youtube.com/feed/subscriptions", "https://www.youtube.com/"].includes(url) //specifically looking for pages on youtube so we don't match search page
 }
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
@@ -30,14 +30,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
           let shortSections = [document.getElementsByTagName(domTags.subPageShorts), document.getElementsByTagName(domTags.homePageShorts)]
           shortSections.forEach((elList) => {
             Array.from(elList).map((el) => {
-              if (el.innerText.includes("Shorts")) el.remove(), console.log("removed shorts node from youtube")
+              if (el.innerText.includes("Shorts")) {
+                el.remove()
+                console.log("removed shorts node from youtube")
+              }
             })
           })
         }
-        setTimeout(removeShorts, 500) //run once initially
-        document.addEventListener("scroll", (_) => {
-          removeShorts()
-        })
+        //run once for initial page load, run on every page scroll
+        setTimeout(removeShorts, 500)
+        document.addEventListener("scroll", removeShorts)
       },
       args: [domTags],
     })
