@@ -5,15 +5,24 @@
  * there is still an issue... we use tags to id page cus script is loaded once and tab.url is only valid on initial page load.
  * even using dom tags here does not work cus, yt does not remove old pages content even after navigation.
  **/
-let domTags = {
+const domTags = {
   searchPageGlob: "ytd-two-column-search-results-renderer",
   subPageShorts: "ytd-item-section-renderer",
   homePageShorts: "ytd-rich-section-renderer",
+  tv: {
+    adBox: "charting-ad",
+    closeAdBtn: "closeButton",
+  },
 }
 
 function isYoutubeRules(tab) {
   const url = tab?.url || ""
   return ["https://www.youtube.com/feed/subscriptions", "https://www.youtube.com/"].includes(url) //specifically looking for pages on youtube so we don't match search page
+}
+
+function isTradingViewRules(tab) {
+  const url = tab?.url || ""
+  return url.includes("https://www.tradingview.com/chart/")
 }
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
@@ -45,12 +54,25 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
     })
   }
 
-  // if (url.includes("example-streaming.com")) {
-  //   chrome.scripting.executeScript({
-  //     target: { tabId },
-  //     func: () => {
-  //       document.querySelectorAll("video").forEach((v) => (v.muted = true))
-  //     },
-  //   })
-  // }
+  if (isTradingViewRules(tab)) {
+    chrome.scripting.executeScript({
+      target: { tabId },
+      func: (domTags) => {
+        function removeAd() {
+          console.log("checking for TV ads")
+          const adBox = document.getElementById(domTags.tv.adBox)
+          const closeBtn = adBox?.getElementsByTagName("button")
+          if (!closeBtn) return console.log("No dismissible ad found")
+          Array.from(closeBtn).forEach((btn) => {
+            if (btn && btn.classList.toString().includes(domTags.tv.closeAdBtn)) {
+              btn.click()
+              console.log("clicked close button on ad box")
+            }
+          })
+        }
+        setInterval(removeAd, 30000)
+      },
+      args: [domTags],
+    })
+  }
 })
