@@ -12,6 +12,7 @@ const domTags = {
   tv: {
     adBox: "charting-ad",
     closeAdBtn: "closeButton",
+    goProModal: '[data-dialog-name^="gopro"]',
   },
 }
 
@@ -61,12 +62,16 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, _) => {
         function removeAd() {
           console.log("checking for TV ads")
           const adBox = document.getElementById(domTags.tv.adBox)
-          const closeBtn = adBox?.getElementsByTagName("button")
-          if (!closeBtn) return console.log("No dismissible ad found")
-          Array.from(closeBtn).forEach((btn) => {
+          const goProModal = document.querySelectorAll(domTags.tv.goProModal)
+          const closeAdBtns = adBox?.getElementsByTagName("button")
+          const closeModalButtons = goProModal[0]?.getElementsByTagName("button")
+          const allButtons = Array.from(closeAdBtns || "").concat(Array.from(closeModalButtons || ""))
+          if (allButtons.length <= 0) return console.log("No dismissible ads found")
+
+          Array.from(allButtons).forEach((btn) => {
             if (btn && btn.classList.toString().includes(domTags.tv.closeAdBtn)) {
               btn.click()
-              console.log("clicked close button on ad box")
+              console.log("clicked close button on TV up sell")
             }
           })
         }
